@@ -16,8 +16,8 @@ type Screen struct{}
 func (s Screen) Draw(pixels *[][]color.RGBA) {
 	width := len(*pixels)
 	height := len((*pixels)[0])
-	ebiten.SetWindowSize(width*2, height*2)
-	ebiten.SetWindowTitle("2D Pixel Array")
+	ebiten.SetWindowSize(width, height)
+	ebiten.SetWindowTitle("Ray traced")
 
 	game := &Game{
 		pixels: pixels,
