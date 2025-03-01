@@ -8,14 +8,14 @@ import (
 )
 
 type ScreenDrawer interface {
-	Draw(pixels [][]color.RGBA)
+	Draw(pixels *[][]color.RGBA)
 }
 
 type Screen struct{}
 
-func (s Screen) Draw(pixels [][]color.RGBA) {
-	width := len(pixels)
-	height := len(pixels[0])
+func (s Screen) Draw(pixels *[][]color.RGBA) {
+	width := len(*pixels)
+	height := len((*pixels)[0])
 	ebiten.SetWindowSize(width*2, height*2)
 	ebiten.SetWindowTitle("2D Pixel Array")
 
@@ -28,7 +28,7 @@ func (s Screen) Draw(pixels [][]color.RGBA) {
 }
 
 type Game struct {
-	pixels [][]color.RGBA
+	pixels *[][]color.RGBA
 }
 
 func (g *Game) Update() error {
@@ -37,16 +37,16 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	width := len(g.pixels)
-	height := len(g.pixels[0])
+	width := len(*g.pixels)
+	height := len((*g.pixels)[0])
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
-			screen.Set(x, y, g.pixels[x][y])
+			screen.Set(x, y, (*g.pixels)[x][y])
 		}
 	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return len(g.pixels), len(g.pixels[0])
+	return len(*g.pixels), len((*g.pixels)[0])
 }

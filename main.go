@@ -18,13 +18,13 @@ func main() {
 	}
 
 	// Populate with a gradient
-	for x := 0; x < screenWidth; x++ {
-		for y := 0; y < screenHeight; y++ {
+	for x := range screenWidth {
+		for y := range screenHeight {
 			pixels[x][y] = color.RGBA{uint8(x), uint8(y), 255, 255}
 		}
 	}
 
 	// Draw it
 	var drawer ScreenDrawer = Screen{}
-	drawer.Draw(pixels)
+	drawer.Draw(&pixels)
 }
