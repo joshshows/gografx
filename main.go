@@ -11,6 +11,7 @@ const (
 
 func main() {
 	// camera is at 0,0,0 in world units.
+	camera := Vector{val: [3]float32{0, 0, 0}}
 	// view screen is some distance away based on resolution.
 	screenZ := (screenHeight + screenWidth) * 2
 	translateX := screenWidth / 2
@@ -30,7 +31,8 @@ func main() {
 		for y := range screenHeight {
 			v := Vector{val: [3]float32{float32(x - translateX), float32(y - translateY), float32(screenZ)}}
 			v.Normalize()
-			intersects := v.Intersects(sphere)
+			//intersects := v.Intersects(sphere)
+			intersects, _, _ := sphere.IntersectsAt(camera, v)
 			if intersects {
 				pixels[x][y] = color.RGBA{0, 0, 255, 255}
 			} else {
