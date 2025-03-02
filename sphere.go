@@ -6,7 +6,7 @@ import (
 
 type Sphere struct {
 	center Vector
-	radius float32
+	radius float64
 }
 
 func (s Sphere) IntersectsAt(origin Vector, direction Vector) (bool, Vector, Vector) {
@@ -22,7 +22,7 @@ func (s Sphere) IntersectsAt(origin Vector, direction Vector) (bool, Vector, Vec
 	}
 
 	// Compute the two intersection points
-	sqrtD := float32(math.Sqrt(float64(discriminant)))
+	sqrtD := math.Sqrt(float64(discriminant))
 	t1 := (-b - sqrtD) / 2
 	t2 := (-b + sqrtD) / 2
 

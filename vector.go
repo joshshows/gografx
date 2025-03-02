@@ -5,57 +5,42 @@ import (
 )
 
 type Vector struct {
-	val [3]float32
-}
-
-func (v Vector) X() float32 {
-	return v.val[0]
-}
-
-func (v Vector) Y() float32 {
-	return v.val[1]
-}
-func (v Vector) Z() float32 {
-	return v.val[2]
+	x float64
+	y float64
+	z float64
 }
 
 func (v *Vector) Normalize() {
-	length := float32(math.Sqrt(float64(v.val[0]*v.val[0] + v.val[1]*v.val[1] + v.val[2]*v.val[2])))
-	for i := range v.val {
-		v.val[i] = v.val[i] / length
-	}
+	length := math.Sqrt(v.x*v.x + v.y*v.y + v.z*v.z)
+	v.x = v.x / length
+	v.y = v.y / length
+	v.z = v.z / length
 }
 
 func (v Vector) Subtract(w Vector) Vector {
 	return Vector{
-		val: [3]float32{
-			v.X() - w.X(),
-			v.Y() - w.Y(),
-			v.Z() - w.Z(),
-		},
+		x: v.x - w.x,
+		y: v.y - w.y,
+		z: v.z - w.z,
 	}
 }
 
-func (v Vector) Multiply(scalar float32) Vector {
+func (v Vector) Multiply(scalar float64) Vector {
 	return Vector{
-		val: [3]float32{
-			v.X() * scalar,
-			v.Y() * scalar,
-			v.Z() * scalar,
-		},
+		v.x * scalar,
+		v.y * scalar,
+		v.z * scalar,
 	}
 }
 
 func (v Vector) Add(w Vector) Vector {
 	return Vector{
-		val: [3]float32{
-			v.X() + w.X(),
-			v.Y() + w.Y(),
-			v.Z() + w.Z(),
-		},
+		v.x + w.x,
+		v.y + w.y,
+		v.z + w.z,
 	}
 }
 
-func (v Vector) DotProduct(other Vector) float32 {
-	return v.X()*other.X() + v.Y()*other.Y() + v.Z()*other.Z()
+func (v Vector) DotProduct(other Vector) float64 {
+	return v.x*other.x + v.y*other.y + v.z*other.z
 }
