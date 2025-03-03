@@ -2,6 +2,7 @@ package main
 
 import (
 	"image/color"
+	"math"
 )
 
 const (
@@ -16,6 +17,11 @@ func main() {
 	screenZ := (screenHeight + screenWidth) * 2
 	translateX := screenWidth / 2
 	translateY := screenHeight / 2
+
+	light := Sphere{
+		center: Vector{-1000, 1000, float64(screenZ)},
+		radius: float64(screenZ / 5),
+	}
 
 	sphere := Sphere{
 		center: Vector{0, 0, float64(screenZ * 2)},
@@ -32,9 +38,10 @@ func main() {
 			v := Vector{float64(x - translateX), float64(y - translateY), float64(screenZ)}
 			v.Normalize()
 			//intersects := v.Intersects(sphere)
-			intersects, _, _ := sphere.IntersectsAt(camera, v)
+			intersects, i1, _ := sphere.IntersectsAt(camera, v)
 			if intersects {
-				pixels[x][y] = color.RGBA{0, 0, 255, 255}
+				c := doLight(i1, light, sphere)
+				pixels[x][y] = color.RGBA{0, 0, uint8(255 * c), 255}
 			} else {
 				pixels[x][y] = color.RGBA{0, 0, 0, 255}
 			}
@@ -65,4 +72,29 @@ func doSomeStuff() {
 	// Draw it
 	var drawer ScreenDrawer = Screen{}
 	drawer.Draw(&pixels)
+}
+
+func doLight(phit Vector, light Sphere, object Sphere) float64 {
+	/*
+			            Vec3f transmission = 1;
+		                Vec3f lightDirection = spheres[i].center - phit;
+		                lightDirection.normalize();
+		                for (unsigned j = 0; j < spheres.size(); ++j) {
+		                    if (i != j) {
+		                        float t0, t1;
+		                        if (spheres[j].intersect(phit + nhit * bias, lightDirection, t0, t1)) {
+		                            transmission = 0;
+		                            break;
+		                        }
+		                    }
+		                }
+		                surfaceColor += sphere->surfaceColor * transmission *
+		                std::max(float(0), nhit.dot(lightDirection)) * spheres[i].emissionColor;
+	*/
+
+	shadowRay := light.center.Subtract(phit)
+	shadowRay.Normalize()
+	nhit := phit.Subtract(object.center)
+	nhit.Normalize()
+	return math.Max(float64(0), nhit.DotProduct(shadowRay))
 }
