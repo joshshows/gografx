@@ -1,12 +1,14 @@
 package main
 
 import (
+	"image/color"
 	"math"
 )
 
 type Sphere struct {
 	center Vector
 	radius float64
+	color  color.RGBA
 }
 
 func (s Sphere) IntersectsAt(origin Vector, direction Vector) (bool, Vector, Vector) {
