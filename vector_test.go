@@ -1,15 +1,16 @@
 package main
 
 import (
+	"reflect"
 	"testing"
 )
 
 func TestVectorNormalize(t *testing.T) {
-	v := Vector{val: [3]float32{21.4, 14.22, 71.43}}
+	v := Vector{21.4, 14.22, 71.43}
 	v.Normalize()
 
-	expected := [3]float32{0.28191072, 0.18732572, 0.9409758}
-	if expected != v.val {
-		t.Fatalf(`Arrays did not match %v %v`, expected, v.val)
+	expected := Vector{0.2819107073490415, 0.1873257130141762, 0.9409757862589737}
+	if !reflect.DeepEqual(expected, v) {
+		t.Fatalf(`Arrays did not match %v %v`, expected, v)
 	}
 }

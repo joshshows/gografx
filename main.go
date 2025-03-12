@@ -19,20 +19,14 @@ func main() {
 	translateY := screenHeight / 2
 
 	light := Sphere{
-		center: Vector{-1000, 1000, float64(screenZ)},
-		radius: float64(screenZ / 5),
+		center: Vector{0, -5000, 0},
+		radius: 5000,
 	}
 
-	/*
-		sphere := Sphere{
-			center: Vector{0, 0, float64(screenZ * 2)},
-			radius: float64(screenZ / 10),
-		}*/
-
-	objs := [...]Sphere{
-		{Vector{0, 0, float64(screenZ * 2)}, float64(screenZ / 10), color.RGBA{0, 0, 255, 0}},
+	objs := []Sphere{
+		//{Vector{0, 0, float64(screenZ * 2)}, float64(screenZ / 10), color.RGBA{0, 0, 255, 0}},
 		{Vector{float64(translateX), float64(translateY), float64(screenZ * 4)}, float64(screenZ / 10), color.RGBA{255, 0, 0, 0}},
-		{Vector{float64(-translateX), float64(-translateY), float64(screenZ * 4)}, float64(screenZ / 5), color.RGBA{0, 255, 0, 0}},
+		{Vector{float64(-translateX), float64(translateY), float64(screenZ * 3)}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
 	}
 
 	pixels := make([][]color.RGBA, screenWidth)
@@ -44,14 +38,16 @@ func main() {
 		for y := range screenHeight {
 			v := Vector{float64(x - translateX), float64(y - translateY), float64(screenZ)}
 			v.Normalize()
-			//intersects := v.Intersects(sphere)
 			for _, obj := range objs {
 				intersects, i1, _ := obj.IntersectsAt(camera, v)
 				if intersects {
-					pixels[x][y] = doLight(i1, light, obj) //color.RGBA{0, 0, uint8(255 * c), 255}
-				} /* else {
-					pixels[x][y] = color.RGBA{0, 0, 0, 255}
-				}*/
+					//pixels[x][y] = doLight(i1, light, obj, objs)
+					// skip changing if this guy has already been colored
+					c := doLight(i1, light, obj, objs, x, y)
+					if c.R != 0 || c.B != 0 || c.G != 0 {
+						pixels[x][y] = c
+					}
+				}
 			}
 		}
 	}
@@ -82,7 +78,7 @@ func doSomeStuff() {
 	drawer.Draw(&pixels)
 }
 
-func doLight(phit Vector, light Sphere, object Sphere) color.RGBA {
+func doLight(phit Vector, light Sphere, object Sphere, objects []Sphere, pixX int, pixY int) color.RGBA {
 	/*
 			            Vec3f transmission = 1;
 		                Vec3f lightDirection = spheres[i].center - phit;
@@ -106,8 +102,23 @@ func doLight(phit Vector, light Sphere, object Sphere) color.RGBA {
 	shadowRay.Normalize()
 	nhit := phit.Subtract(object.center)
 	nhit.Normalize()
+
+	// are we blocked by another object?
+	transmission := 1
+	for _, x := range objects {
+		if x == object {
+			continue
+		}
+
+		intersects, _, _ := x.IntersectsAt(phit.Add(nhit), shadowRay)
+		if intersects {
+			transmission = 0
+			break
+		}
+	}
 	c := math.Max(float64(0), nhit.DotProduct(shadowRay))
-	return multiplyColor(object.color, c)
+	//return multiplyColor(object.color, c*float64(transmission))
+	return multiplyColor(object.color, c*float64(transmission))
 }
 
 func multiplyColor(c color.RGBA, x float64) color.RGBA {

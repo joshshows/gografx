@@ -34,3 +34,12 @@ func (s Sphere) IntersectsAt(origin Vector, direction Vector) (bool, Vector, Vec
 
 	return true, intersection1, intersection2
 }
+
+func (s Sphere) GetTexture(v Vector) color.RGBA {
+	// Sin calc should give us a smooth change between 0 and 1
+	factor := (math.Sin(v.x+v.y+v.z) + 1) / 2
+	newBlue := uint8(0)
+	newRed := uint8(float64(s.color.R) * factor)
+	newGreen := uint8(float64(s.color.G) * factor)
+	return color.RGBA{newRed, newGreen, newBlue, 255}
+}
