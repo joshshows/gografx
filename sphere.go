@@ -35,7 +35,7 @@ func (s Sphere) IntersectsAt(origin Vector, direction Vector) (bool, Vector) {
 	return true, intersection1
 }
 
-func (s Sphere) Color() color.RGBA {
+func (s Sphere) Color(point Vector) color.RGBA {
 	return s.color
 }
 

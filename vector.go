@@ -44,3 +44,11 @@ func (v Vector) Add(w Vector) Vector {
 func (v Vector) DotProduct(other Vector) float64 {
 	return v.x*other.x + v.y*other.y + v.z*other.z
 }
+
+func (v Vector) CrossProduct(b Vector) Vector {
+	return Vector{
+		x: v.y*b.z - v.z*b.y,
+		y: v.z*b.x - v.x*b.z,
+		z: v.x*b.y - v.y*b.x,
+	}
+}

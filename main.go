@@ -17,13 +17,14 @@ func main() {
 	translateX := screenWidth / 2
 	translateY := screenHeight / 2
 
-	light := Vector{-screenWidth * 10, -screenHeight * 10, 0}
+	light := Vector{-screenWidth * 10, -screenHeight * 10, -screenHeight}
 
 	objs := []geometry{
-		//Sphere{Vector{0, 0, float64(screenZ * 2)}, float64(screenZ / 10), color.RGBA{0, 0, 255, 0}},
-		Plane{Vector{0, float64(screenZ / 5), 0}, Vector{0, 1, 0}, color.RGBA{0, 0, 255, 0}},
-		Sphere{Vector{float64(translateX), float64(translateY), float64(screenZ * 4)}, float64(screenZ / 10), color.RGBA{255, 0, 0, 0}},
-		Sphere{Vector{float64(-translateX), float64(translateY), float64(screenZ * 3)}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
+		//Plane{Vector{0, 0, float64(screenZ * 25)}, Vector{0, 0, 1}, color.RGBA{255, 255, 255, 0}},
+		Plane{Vector{0, float64(screenZ / 5), 0}, Vector{0, 1, 0}, color.RGBA{0, 127, 255, 0}},
+		Sphere{Vector{float64(translateX) * .25, float64(translateY), float64(screenZ * 4)}, float64(screenZ / 10), color.RGBA{255, 165, 0, 0}},
+		Sphere{Vector{float64(-translateX) * 1.5, float64(translateY), float64(screenZ) * 2.5}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
+		Sphere{Vector{float64(translateX) * 1.5, float64(translateY), float64(screenZ * 2)}, float64(screenZ / 10), color.RGBA{128, 0, 128, 0}},
 	}
 
 	pixels := make([][]color.RGBA, screenWidth)
@@ -38,13 +39,9 @@ func main() {
 			for _, obj := range objs {
 				intersects, i1 := obj.IntersectsAt(camera, v)
 				if intersects {
-					//pixels[x][y] = doLight(i1, light, obj, objs)
-					// skip changing if this guy has already been colored
 					c := doLight(i1, light, obj, objs)
 					//c := obj.Color()
-					//if c.R != 0 || c.B != 0 || c.G != 0 {
 					pixels[x][y] = c
-					//}
 				}
 			}
 		}
@@ -114,11 +111,5 @@ func doLight(phit Vector, light Vector, geo geometry, geometries []geometry) col
 		}
 	}
 	c := math.Max(float64(0), nhit.DotProduct(shadowRay))
-	//return multiplyColor(object.color, c*float64(transmission))
-	return multiplyColor(geo.Color(), c*float64(transmission))
-}
-
-func multiplyColor(c color.RGBA, x float64) color.RGBA {
-	fac := [3]float64{float64(c.R), float64(c.G), float64(c.B)}
-	return color.RGBA{uint8(fac[0] * x), uint8(fac[1] * x), uint8(fac[2] * x), 255}
+	return MultiplyColor(geo.Color(phit), c*float64(transmission))
 }
