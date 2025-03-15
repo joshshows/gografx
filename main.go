@@ -6,27 +6,24 @@ import (
 )
 
 const (
-	screenWidth  = 640
-	screenHeight = 480
+	screenWidth  = 800
+	screenHeight = 600
 )
 
 func main() {
-	// camera is at 0,0,0 in world units.
 	camera := Vector{0, 0, 0}
-	// view screen is some distance away based on resolution.
+	// build the scene relative to screen resolution
 	screenZ := (screenHeight + screenWidth) * 2
 	translateX := screenWidth / 2
 	translateY := screenHeight / 2
 
-	light := Sphere{
-		center: Vector{0, -5000, 0},
-		radius: 5000,
-	}
+	light := Vector{-screenWidth * 10, -screenHeight * 10, 0}
 
-	objs := []Sphere{
-		//{Vector{0, 0, float64(screenZ * 2)}, float64(screenZ / 10), color.RGBA{0, 0, 255, 0}},
-		{Vector{float64(translateX), float64(translateY), float64(screenZ * 4)}, float64(screenZ / 10), color.RGBA{255, 0, 0, 0}},
-		{Vector{float64(-translateX), float64(translateY), float64(screenZ * 3)}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
+	objs := []geometry{
+		//Sphere{Vector{0, 0, float64(screenZ * 2)}, float64(screenZ / 10), color.RGBA{0, 0, 255, 0}},
+		Plane{Vector{0, float64(screenZ / 5), 0}, Vector{0, 1, 0}, color.RGBA{0, 0, 255, 0}},
+		Sphere{Vector{float64(translateX), float64(translateY), float64(screenZ * 4)}, float64(screenZ / 10), color.RGBA{255, 0, 0, 0}},
+		Sphere{Vector{float64(-translateX), float64(translateY), float64(screenZ * 3)}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
 	}
 
 	pixels := make([][]color.RGBA, screenWidth)
@@ -39,14 +36,15 @@ func main() {
 			v := Vector{float64(x - translateX), float64(y - translateY), float64(screenZ)}
 			v.Normalize()
 			for _, obj := range objs {
-				intersects, i1, _ := obj.IntersectsAt(camera, v)
+				intersects, i1 := obj.IntersectsAt(camera, v)
 				if intersects {
 					//pixels[x][y] = doLight(i1, light, obj, objs)
 					// skip changing if this guy has already been colored
-					c := doLight(i1, light, obj, objs, x, y)
-					if c.R != 0 || c.B != 0 || c.G != 0 {
-						pixels[x][y] = c
-					}
+					c := doLight(i1, light, obj, objs)
+					//c := obj.Color()
+					//if c.R != 0 || c.B != 0 || c.G != 0 {
+					pixels[x][y] = c
+					//}
 				}
 			}
 		}
@@ -55,7 +53,6 @@ func main() {
 	// Draw it
 	var drawer ScreenDrawer = Screen{}
 	drawer.Draw(&pixels)
-
 }
 
 func doSomeStuff() {
@@ -78,7 +75,7 @@ func doSomeStuff() {
 	drawer.Draw(&pixels)
 }
 
-func doLight(phit Vector, light Sphere, object Sphere, objects []Sphere, pixX int, pixY int) color.RGBA {
+func doLight(phit Vector, light Vector, geo geometry, geometries []geometry) color.RGBA {
 	/*
 			            Vec3f transmission = 1;
 		                Vec3f lightDirection = spheres[i].center - phit;
@@ -98,19 +95,19 @@ func doLight(phit Vector, light Sphere, object Sphere, objects []Sphere, pixX in
 		                std::max(float(0), nhit.dot(lightDirection)) * spheres[i].emissionColor;
 	*/
 
-	shadowRay := light.center.Subtract(phit)
+	shadowRay := light.Subtract(phit)
 	shadowRay.Normalize()
-	nhit := phit.Subtract(object.center)
+	nhit := geo.GetSurfaceNormal(phit)
 	nhit.Normalize()
 
 	// are we blocked by another object?
 	transmission := 1
-	for _, x := range objects {
-		if x == object {
+	for _, x := range geometries {
+		if x == geo {
 			continue
 		}
 
-		intersects, _, _ := x.IntersectsAt(phit.Add(nhit), shadowRay)
+		intersects, _ := x.IntersectsAt(phit.Add(nhit), shadowRay)
 		if intersects {
 			transmission = 0
 			break
@@ -118,7 +115,7 @@ func doLight(phit Vector, light Sphere, object Sphere, objects []Sphere, pixX in
 	}
 	c := math.Max(float64(0), nhit.DotProduct(shadowRay))
 	//return multiplyColor(object.color, c*float64(transmission))
-	return multiplyColor(object.color, c*float64(transmission))
+	return multiplyColor(geo.Color(), c*float64(transmission))
 }
 
 func multiplyColor(c color.RGBA, x float64) color.RGBA {
