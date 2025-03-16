@@ -54,7 +54,7 @@ func (p Plane) Color(point Vector) color.RGBA {
 	}
 	*/
 
-	frequency := 0.001
+	frequency := 0.002
 	u := point.DotProduct(uAxis)
 	v := point.DotProduct(vAxis)
 

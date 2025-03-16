@@ -20,11 +20,11 @@ func main() {
 	light := Vector{-screenWidth * 10, -screenHeight * 10, -screenHeight}
 
 	objs := []geometry{
-		Plane{Vector{0, 0, float64(screenZ * 25)}, Vector{0, 0, 1}, color.RGBA{255, 255, 255, 0}},
-		Plane{Vector{0, float64(screenZ / 5), 0}, Vector{0, 1, 0}, color.RGBA{0, 127, 255, 0}},
-		Sphere{Vector{float64(translateX) * .25, float64(translateY), float64(screenZ * 4)}, float64(screenZ / 10), color.RGBA{255, 165, 0, 0}},
-		Sphere{Vector{float64(-translateX) * 1.5, float64(translateY), float64(screenZ) * 2.5}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
-		Sphere{Vector{float64(translateX) * 1.5, float64(translateY), float64(screenZ * 2)}, float64(screenZ / 10), color.RGBA{128, 0, 128, 0}},
+		//Plane{Vector{0, 0, float64(screenZ * 25)}, Vector{0, 0, 1}, color.RGBA{255, 255, 255, 0}},
+		Plane{Vector{0, float64(screenZ / 5), 0}, Vector{0, 1, 0}, color.RGBA{255, 175, 0, 0}},
+		Sphere{Vector{float64(translateX) * .25, float64(translateY), float64(screenZ) * 4.5}, float64(screenZ / 10), color.RGBA{255, 100, 0, 0}},
+		Sphere{Vector{float64(-translateX) * 1.5, float64(translateY), float64(screenZ) * 3}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
+		Sphere{Vector{float64(translateX) * 1.5, float64(translateY), float64(screenZ) * 2.5}, float64(screenZ / 10), color.RGBA{128, 0, 128, 0}},
 	}
 
 	pixels := make([][]color.RGBA, screenWidth)
