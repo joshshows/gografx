@@ -20,7 +20,7 @@ func main() {
 	light := Vector{-screenWidth * 10, -screenHeight * 10, -screenHeight}
 
 	objs := []geometry{
-		//Plane{Vector{0, 0, float64(screenZ * 25)}, Vector{0, 0, 1}, color.RGBA{255, 255, 255, 0}},
+		Plane{Vector{0, 0, float64(screenZ * 25)}, Vector{0, 0, 1}, color.RGBA{255, 255, 255, 0}},
 		Plane{Vector{0, float64(screenZ / 5), 0}, Vector{0, 1, 0}, color.RGBA{0, 127, 255, 0}},
 		Sphere{Vector{float64(translateX) * .25, float64(translateY), float64(screenZ * 4)}, float64(screenZ / 10), color.RGBA{255, 165, 0, 0}},
 		Sphere{Vector{float64(-translateX) * 1.5, float64(translateY), float64(screenZ) * 2.5}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
@@ -36,13 +36,29 @@ func main() {
 		for y := range screenHeight {
 			v := Vector{float64(x - translateX), float64(y - translateY), float64(screenZ)}
 			v.Normalize()
+			minDistance := math.Inf(1)
+			var closestObj geometry
+			var closestIntersection Vector
+			hasIntersection := false
+			// Find the intersection of the object that is closest to the camera
+			// if any
 			for _, obj := range objs {
 				intersects, i1 := obj.IntersectsAt(camera, v)
 				if intersects {
-					c := doLight(i1, light, obj, objs)
-					//c := obj.Color()
-					pixels[x][y] = c
+					hasIntersection = true
+					distance := camera.Distance(i1)
+					if distance < minDistance {
+						closestObj = obj
+						closestIntersection = i1
+						minDistance = distance
+					}
 				}
+			}
+
+			if hasIntersection {
+				c := doLight(closestIntersection, light, closestObj, objs)
+				//c := obj.Color()
+				pixels[x][y] = c
 			}
 		}
 	}

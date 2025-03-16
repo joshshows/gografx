@@ -52,3 +52,8 @@ func (v Vector) CrossProduct(b Vector) Vector {
 		z: v.x*b.y - v.y*b.x,
 	}
 }
+
+func (v Vector) Distance(v2 Vector) float64 {
+	//d = √((x2 - x1)² + (y2 - y1)² + (z2 - z1)²)
+	return math.Sqrt(math.Pow(v2.x-v.x, 2) + math.Pow(v2.y-v.y, 2) + math.Pow(v2.z-v.z, 2))
+}
