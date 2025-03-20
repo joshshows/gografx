@@ -1,8 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	"math"
+	"runtime"
+	"sync"
+	"time"
 )
 
 const (
@@ -10,62 +14,95 @@ const (
 	screenHeight = 600
 )
 
+var camera = Vector{0, 0, 0}
+var screenZ = (screenHeight + screenWidth) * 2
+var translateX = screenWidth / 2
+var translateY = screenHeight / 2
+
+var light = Vector{-screenWidth * 10, -screenHeight * 10, -screenHeight}
+
+var objs = []geometry{
+	Plane{Vector{0, 0, float64(screenZ * 25)}, Vector{0, 0, 1}, color.RGBA{255, 255, 255, 0}},
+	Plane{Vector{0, float64(screenZ / 5), 0}, Vector{0, 1, 0}, color.RGBA{255, 175, 0, 0}},
+	Sphere{Vector{float64(translateX) * .25, float64(translateY), float64(screenZ) * 4.5}, float64(screenZ / 10), color.RGBA{255, 100, 0, 0}},
+	Sphere{Vector{float64(-translateX) * 1.5, float64(translateY), float64(screenZ) * 3}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
+	Sphere{Vector{float64(translateX) * 1.5, float64(translateY), float64(screenZ) * 2.5}, float64(screenZ / 10), color.RGBA{128, 0, 128, 0}},
+}
+
 func main() {
-	camera := Vector{0, 0, 0}
-	// build the scene relative to screen resolution
-	screenZ := (screenHeight + screenWidth) * 2
-	translateX := screenWidth / 2
-	translateY := screenHeight / 2
 
-	light := Vector{-screenWidth * 10, -screenHeight * 10, -screenHeight}
+	var pixels [screenWidth][screenHeight]color.RGBA
+	numCores := runtime.NumCPU()
+	fmt.Println("Using", numCores, "CPU cores")
 
-	objs := []geometry{
-		//Plane{Vector{0, 0, float64(screenZ * 25)}, Vector{0, 0, 1}, color.RGBA{255, 255, 255, 0}},
-		Plane{Vector{0, float64(screenZ / 5), 0}, Vector{0, 1, 0}, color.RGBA{255, 175, 0, 0}},
-		Sphere{Vector{float64(translateX) * .25, float64(translateY), float64(screenZ) * 4.5}, float64(screenZ / 10), color.RGBA{255, 100, 0, 0}},
-		Sphere{Vector{float64(-translateX) * 1.5, float64(translateY), float64(screenZ) * 3}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
-		Sphere{Vector{float64(translateX) * 1.5, float64(translateY), float64(screenZ) * 2.5}, float64(screenZ / 10), color.RGBA{128, 0, 128, 0}},
+	start := time.Now()
+	rowsPerBatch := screenWidth / numCores
+
+	//for range 500 {
+	var wg sync.WaitGroup
+	for i := range numCores {
+		startRow := i * rowsPerBatch
+		endRow := startRow + rowsPerBatch
+		if i == numCores-1 {
+			endRow = screenWidth
+		}
+
+		wg.Add(1)
+		go processBatch(startRow, endRow, &pixels, &wg)
 	}
 
-	pixels := make([][]color.RGBA, screenWidth)
-	for i := range pixels {
-		pixels[i] = make([]color.RGBA, screenHeight)
+	wg.Wait()
+	//}
+
+	since1 := time.Since(start)
+	println(since1.Seconds())
+
+	// Draw it
+	pixelSlice := make([][]color.RGBA, screenWidth)
+	for i := range pixelSlice {
+		pixelSlice[i] = pixels[i][:] // Convert row to slice
 	}
+	var drawer ScreenDrawer = Screen{}
+	drawer.Draw(&pixelSlice)
+}
 
-	for x := range screenWidth {
-		for y := range screenHeight {
-			v := Vector{float64(x - translateX), float64(y - translateY), float64(screenZ)}
-			v.Normalize()
-			minDistance := math.Inf(1)
-			var closestObj geometry
-			var closestIntersection Vector
-			hasIntersection := false
-			// Find the intersection of the object that is closest to the camera
-			// if any
-			for _, obj := range objs {
-				intersects, i1 := obj.IntersectsAt(camera, v)
-				if intersects {
-					hasIntersection = true
-					distance := camera.Distance(i1)
-					if distance < minDistance {
-						closestObj = obj
-						closestIntersection = i1
-						minDistance = distance
-					}
-				}
-			}
+func processBatch(startRow, endRow int, pixels *[screenWidth][screenHeight]color.RGBA, wg *sync.WaitGroup) {
+	defer wg.Done()
 
-			if hasIntersection {
-				c := doLight(closestIntersection, light, closestObj, objs)
-				//c := obj.Color()
-				pixels[x][y] = c
+	for x := startRow; x < endRow; x++ {
+		for y := 0; y < screenHeight; y++ {
+			processPixel(pixels, x, y)
+		}
+	}
+}
+
+func processPixel(pixels *[screenWidth][screenHeight]color.RGBA, x int, y int) {
+	v := Vector{float64(x - translateX), float64(y - translateY), float64(screenZ)}
+	v.Normalize()
+	minDistance := math.Inf(1)
+	var closestObj geometry
+	var closestIntersection Vector
+	hasIntersection := false
+	// Find the intersection of the object that is closest to the camera
+	// if any
+	for _, obj := range objs {
+		intersects, i1 := obj.IntersectsAt(camera, v)
+		if intersects {
+			hasIntersection = true
+			distance := camera.Distance(i1)
+			if distance < minDistance {
+				closestObj = obj
+				closestIntersection = i1
+				minDistance = distance
 			}
 		}
 	}
 
-	// Draw it
-	var drawer ScreenDrawer = Screen{}
-	drawer.Draw(&pixels)
+	if hasIntersection {
+		c := doLight(closestIntersection, light, closestObj, objs)
+		//c := obj.Color()
+		pixels[x][y] = c
+	}
 }
 
 func doSomeStuff() {

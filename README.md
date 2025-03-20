@@ -1,5 +1,14 @@
 # gografx
 
+# Cool things to mention
+
+- Unit tests
+
+- Go routines
+500 interations
+73 secs without
+20 secs with
+
 # Things to look at 
 
 - Go lang multi core
