@@ -22,7 +22,7 @@ var translateY = screenHeight / 2
 var light = Vector{-screenWidth * 10, -screenHeight * 10, -screenHeight}
 
 var objs = []geometry{
-	Plane{Vector{0, 0, float64(screenZ * 25)}, Vector{0, 0, 1}, color.RGBA{255, 255, 255, 0}},
+	CheckerPlane{Plane: Plane{Vector{0, 0, float64(screenZ * 25)}, Vector{0, 0, 1}, color.RGBA{0, 0, 0, 0}}},
 	Plane{Vector{0, float64(screenZ / 5), 0}, Vector{0, 1, 0}, color.RGBA{255, 175, 0, 0}},
 	Sphere{Vector{float64(translateX) * .25, float64(translateY), float64(screenZ) * 4.5}, float64(screenZ / 10), color.RGBA{255, 100, 0, 0}},
 	Sphere{Vector{float64(-translateX) * 1.5, float64(translateY), float64(screenZ) * 3}, float64(screenZ / 10), color.RGBA{0, 255, 0, 0}},
@@ -36,19 +36,19 @@ func main() {
 	fmt.Println("Using", numCores, "CPU cores")
 
 	start := time.Now()
-	rowsPerBatch := screenWidth / numCores
+	colsPerBatch := screenWidth / numCores
 
 	//for range 500 {
 	var wg sync.WaitGroup
 	for i := range numCores {
-		startRow := i * rowsPerBatch
-		endRow := startRow + rowsPerBatch
+		startCol := i * colsPerBatch
+		endCol := startCol + colsPerBatch
 		if i == numCores-1 {
-			endRow = screenWidth
+			endCol = screenWidth
 		}
 
 		wg.Add(1)
-		go processBatch(startRow, endRow, &pixels, &wg)
+		go processBatch(startCol, endCol, &pixels, &wg)
 	}
 
 	wg.Wait()

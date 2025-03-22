@@ -1,11 +1,11 @@
 # gografx
 
-# Cool things to mention
+# Go things to mention
 
 - Unit tests
 
 - Go routines
-500 interations
+500 iterations
 73 secs without
 20 secs with
 

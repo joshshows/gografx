@@ -17,7 +17,7 @@ func (s Screen) Draw(pixels *[][]color.RGBA) {
 	width := len(*pixels)
 	height := len((*pixels)[0])
 	ebiten.SetWindowSize(width, height)
-	ebiten.SetWindowTitle("Ray traced")
+	ebiten.SetWindowTitle("gografx")
 
 	game := &Game{
 		pixels: pixels,
